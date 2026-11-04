@@ -281,8 +281,13 @@ def write_svg(rings: list[set[str]], cycles: list[Cycle], path: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def main(threshold: float = 70.0) -> None:
-    txs, truth = generate_transactions()
+def analyze(
+    txs: list[Transaction],
+    truth: list[set[str]] | None = None,
+    threshold: float = 70.0,
+    svg_path: str = "fraud_rings.svg",
+) -> list[set[str]]:
+    """Run the full pipeline on any list of Transactions. Returns fraud rings."""
     print(f"📦 Loaded {len(txs)} transactions across "
           f"{len({t.src for t in txs} | {t.dst for t in txs})} wallets\n")
 
@@ -320,17 +325,24 @@ def main(threshold: float = 70.0) -> None:
     if decoy:
         print(f"\n  👀 The planted 'friends splitting rent' loop scored {decoy.score} -- correctly NOT flagged")
 
-    # --- evaluate against ground truth ------------------------------------
-    flagged_wallets = ring_wallets
-    true_wallets = set().union(*truth)
-    tp = len(flagged_wallets & true_wallets)
-    precision = tp / len(flagged_wallets) if flagged_wallets else 0
-    recall = tp / len(true_wallets)
-    print(f"\n📊 Wallet-level precision {precision:.0%} | recall {recall:.0%} "
-          f"({tp}/{len(true_wallets)} fraud wallets caught)")
+    # --- evaluate against ground truth (only for synthetic data) ----------
+    if truth:
+        true_wallets = set().union(*truth)
+        tp = len(ring_wallets & true_wallets)
+        precision = tp / len(ring_wallets) if ring_wallets else 0
+        recall = tp / len(true_wallets)
+        print(f"\n📊 Wallet-level precision {precision:.0%} | recall {recall:.0%} "
+              f"({tp}/{len(true_wallets)} fraud wallets caught)")
 
-    write_svg(rings, flagged, "fraud_rings.svg")
-    print("🖼️  Wrote fraud_rings.svg (open it in a browser)")
+    if rings:
+        write_svg(rings, flagged, svg_path)
+        print(f"🖼️  Wrote {svg_path} (open it in a browser)")
+    return rings
+
+
+def main() -> None:
+    txs, truth = generate_transactions()
+    analyze(txs, truth)
 
 
 if __name__ == "__main__":

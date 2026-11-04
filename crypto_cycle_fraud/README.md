@@ -34,7 +34,32 @@ ground truth, and writes `fraud_rings.svg`.
 
 ![rings](fraud_rings.svg)
 
-## Next steps for real data
-- Load real txs (Etherscan / BigQuery `crypto_ethereum.transactions`) into `Transaction`.
+## Real data: Etherscan
+
+```
+seed wallet ──fetch txs──► top counterparties ──fetch txs──► ... ──► analyze()
+  depth 0                     depth 1                                  same detector
+```
+
+1. Get a free API key at https://etherscan.io/myapikey
+2. `export ETHERSCAN_API_KEY=yourkey`
+3. If you're in a sandbox, allow `api.etherscan.io` in its network settings.
+
+```bash
+python3 etherscan_loader.py 0xSEEDWALLET                       # native ETH, crawl 1 hop out
+python3 etherscan_loader.py 0xA 0xB --depth 2 --max-wallets 80 # wider crawl
+python3 etherscan_loader.py 0xA --token 0xdAC17F958D2ee523a2206206994597C13D831ec7  # USDT only
+python3 etherscan_loader.py 0xA --chain-id 56                  # BSC (any Etherscan V2 chain)
+python3 etherscan_loader.py --from-cache txs.json              # re-run offline, 0 API calls
+```
+
+- Each crawled wallet costs one API call (`--max-wallets` caps the total). Calls are throttled to the free tier's 5 per second, with retries on rate limits.
+- **Hubs** (wallets with 1000 or more txs, like exchanges and DEX routers) are recorded but not crawled through.
+- Failed, zero-value, and contract-creation txs are dropped.
+- Only transfers between crawled wallets are analyzed, because a loop can only close through wallets whose history was fetched.
+
+Offline tests (fake Etherscan responses): `python3 -m unittest test_etherscan_loader -v`
+
+## Next steps
 - Handle token swaps and DEX hops (value changes asset mid-loop).
 - Swap the hand-tuned score for an ML model (GNN or gradient boosting) trained on these cycle features.
