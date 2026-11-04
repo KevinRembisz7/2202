@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="300" font-family="monospace" font-size="11">
+<rect width="100%" height="100%" fill="#111"/>
+<defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#ff5c5c"/></marker></defs>
+<line x1="144.6" y1="75.6" x2="194.7" y2="112.0" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="170.4" y="94.4" fill="#ffd166" text-anchor="middle">74.5</text>
+<line x1="205.3" y1="140.9" x2="186.1" y2="199.7" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="195.4" y="171.2" fill="#ffd166" text-anchor="middle">74.2</text>
+<line x1="162.0" y1="218.8" x2="100.0" y2="218.8" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="130.0" y="218.8" fill="#ffd166" text-anchor="middle">73.9</text>
+<line x1="74.5" y1="201.6" x2="55.3" y2="142.8" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="64.6" y="171.2" fill="#ffd166" text-anchor="middle">73.7</text>
+<line x1="63.7" y1="113.2" x2="113.8" y2="76.8" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="89.6" y="94.4" fill="#ffd166" text-anchor="middle">73.3</text>
+<circle cx="130.0" cy="65.0" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="130.0" y="69.0" fill="#fff" text-anchor="middle">3ef</text>
+<circle cx="210.8" cy="123.7" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="210.8" y="127.7" fill="#fff" text-anchor="middle">3f0</text>
+<circle cx="180.0" cy="218.8" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="180.0" y="222.8" fill="#fff" text-anchor="middle">3f1</text>
+<circle cx="80.0" cy="218.8" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="80.0" y="222.8" fill="#fff" text-anchor="middle">3f2</text>
+<circle cx="49.2" cy="123.7" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="49.2" y="127.7" fill="#fff" text-anchor="middle">3f3</text>
+<text x="130" y="25" fill="#fff" text-anchor="middle">Ring 1 · score 97.3</text>
+<line x1="405.6" y1="74.0" x2="446.3" y2="97.5" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="426.8" y="86.2" fill="#ffd166" text-anchor="middle">297.2</text>
+<line x1="463.6" y1="125.5" x2="463.6" y2="172.5" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="463.6" y="150.0" fill="#ffd166" text-anchor="middle">296.7</text>
+<line x1="448.0" y1="201.5" x2="407.3" y2="225.0" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="426.8" y="213.8" fill="#ffd166" text-anchor="middle">295.8</text>
+<line x1="374.4" y1="226.0" x2="333.7" y2="202.5" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="353.2" y="213.8" fill="#ffd166" text-anchor="middle">295.0</text>
+<line x1="316.4" y1="174.5" x2="316.4" y2="127.5" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="316.4" y="150.0" fill="#ffd166" text-anchor="middle">292.4</text>
+<line x1="332.0" y1="98.5" x2="372.7" y2="75.0" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="353.2" y="86.2" fill="#ffd166" text-anchor="middle">291.8</text>
+<circle cx="390.0" cy="65.0" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="390.0" y="69.0" fill="#fff" text-anchor="middle">3f4</text>
+<circle cx="463.6" cy="107.5" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="463.6" y="111.5" fill="#fff" text-anchor="middle">3f5</text>
+<circle cx="463.6" cy="192.5" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="463.6" y="196.5" fill="#fff" text-anchor="middle">3f6</text>
+<circle cx="390.0" cy="235.0" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="390.0" y="239.0" fill="#fff" text-anchor="middle">3f7</text>
+<circle cx="316.4" cy="192.5" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="316.4" y="196.5" fill="#fff" text-anchor="middle">3f8</text>
+<circle cx="316.4" cy="107.5" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="316.4" y="111.5" fill="#fff" text-anchor="middle">3f9</text>
+<text x="390" y="25" fill="#fff" text-anchor="middle">Ring 2 · score 96.0</text>
+<line x1="662.7" y1="77.7" x2="720.9" y2="135.9" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="692.5" y="107.5" fill="#ffd166" text-anchor="middle">118.9</text>
+<line x1="722.3" y1="162.7" x2="664.1" y2="220.9" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="692.5" y="192.5" fill="#ffd166" text-anchor="middle">118.4</text>
+<line x1="637.3" y1="222.3" x2="579.1" y2="164.1" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="607.5" y="192.5" fill="#ffd166" text-anchor="middle">118.1</text>
+<line x1="577.7" y1="137.3" x2="635.9" y2="79.1" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="607.5" y="107.5" fill="#ffd166" text-anchor="middle">117.1</text>
+<circle cx="650.0" cy="65.0" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="650.0" y="69.0" fill="#fff" text-anchor="middle">3eb</text>
+<circle cx="735.0" cy="150.0" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="735.0" y="154.0" fill="#fff" text-anchor="middle">3ec</text>
+<circle cx="650.0" cy="235.0" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="650.0" y="239.0" fill="#fff" text-anchor="middle">3ed</text>
+<circle cx="565.0" cy="150.0" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="565.0" y="154.0" fill="#fff" text-anchor="middle">3ee</text>
+<text x="650" y="25" fill="#fff" text-anchor="middle">Ring 3 · score 91.6</text>
+<line x1="919.0" y1="80.6" x2="973.6" y2="175.2" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="946.8" y="128.8" fill="#ffd166" text-anchor="middle">49.7</text>
+<line x1="965.6" y1="192.5" x2="856.4" y2="192.5" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="910.0" y="192.5" fill="#ffd166" text-anchor="middle">49.6</text>
+<line x1="845.4" y1="176.9" x2="900.0" y2="82.3" stroke="#ff5c5c" stroke-width="2" marker-end="url(#arr)"/>
+<text x="873.2" y="128.8" fill="#ffd166" text-anchor="middle">49.5</text>
+<circle cx="910.0" cy="65.0" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="910.0" y="69.0" fill="#fff" text-anchor="middle">3e8</text>
+<circle cx="983.6" cy="192.5" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="983.6" y="196.5" fill="#fff" text-anchor="middle">3e9</text>
+<circle cx="836.4" cy="192.5" r="16" fill="#2b2d42" stroke="#8ecae6"/>
+<text x="836.4" y="196.5" fill="#fff" text-anchor="middle">3ea</text>
+<text x="910" y="25" fill="#fff" text-anchor="middle">Ring 4 · score 87.3</text>
+</svg>
