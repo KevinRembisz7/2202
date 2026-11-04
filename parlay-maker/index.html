@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edge Parlay Lab</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --ink: #14171c; --muted: #5d6673; --line: #e2e5ea;
+    --accent: #2f6fed; --good: #12805c; --bad: #c2362f; --warn: #b26b00; --chip: #eef2f8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1216; --card: #181c22; --ink: #e8ebef; --muted: #98a2ae; --line: #2a3038;
+      --accent: #6c9bff; --good: #3ccf91; --bad: #ff7a70; --warn: #ffb547; --chip: #222831;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 0 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+  label { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); gap: 4px; }
+  input, select, button { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 10px; min-width: 0; }
+  button { cursor: pointer; background: var(--accent); color: #fff; border-color: transparent; font-weight: 600; }
+  button.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  button.small { padding: 3px 8px; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  .scroll { overflow-x: auto; }
+  .good { color: var(--good); font-weight: 700; } .bad { color: var(--bad); font-weight: 700; }
+  .warn { color: var(--warn); }
+  .chip { display: inline-block; background: var(--chip); border-radius: 999px; padding: 2px 8px; font-size: 12px; }
+  .muted { color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+  .stat { display: flex; flex-direction: column; } .stat b { font-size: 22px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 22px; margin: 10px 0; }
+  .bars { margin-top: 6px; }
+  .bar { position: relative; height: 10px; background: var(--chip); border-radius: 6px; margin: 3px 0; overflow: hidden; }
+  .bar > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; }
+  .legend { font-size: 11px; color: var(--muted); }
+  .parlay { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .parlay ul { margin: 6px 0; padding-left: 18px; }
+  .note { font-size: 12px; color: var(--muted); }
+  details summary { cursor: pointer; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎯 Edge Parlay Lab</h1>
+  <p class="sub">Finds +EV legs by comparing every book's price to the <b>sharp, no-vig line</b> (Pinnacle by default), then builds parlays from only the legs where you're getting paid more than the true odds.</p>
+
+  <!-- LIVE ODDS -->
+  <div class="card">
+    <h2>1 · Pull live odds</h2>
+    <div class="row">
+      <label>The Odds API key <input id="apiKey" type="password" placeholder="free at the-odds-api.com" size="26"></label>
+      <label>Sport
+        <select id="sport">
+          <option value="americanfootball_nfl">NFL</option>
+          <option value="americanfootball_ncaaf">NCAAF</option>
+          <option value="basketball_nba">NBA</option>
+          <option value="basketball_ncaab">NCAAB</option>
+          <option value="icehockey_nhl">NHL</option>
+          <option value="baseball_mlb">MLB</option>
+          <option value="soccer_epl">EPL</option>
+          <option value="mma_mixed_martial_arts">MMA</option>
+        </select>
+      </label>
+      <label>Markets
+        <select id="markets">
+          <option value="h2h,spreads,totals">ML + spreads + totals</option>
+          <option value="h2h">Moneyline only</option>
+        </select>
+      </label>
+      <label>Sharp book <select id="sharp"><option value="pinnacle">Pinnacle</option><option value="betonlineag">BetOnline</option><option value="lowvig">LowVig</option></select></label>
+      <button id="fetchBtn">Fetch odds</button>
+      <button id="demoBtn" class="ghost">Load demo data</button>
+    </div>
+    <p class="note" id="fetchStatus">Your key stays in this browser only. Demo data is made-up numbers so you can see how it works.</p>
+  </div>
+
+  <!-- LEGS TABLE -->
+  <div class="card">
+    <h2>2 · Leg finder <span class="chip" id="legCount">0 legs</span></h2>
+    <div class="row" style="margin-bottom:10px">
+      <label>Min edge per leg <select id="minEdge"><option value="0">0%</option><option value="0.01" selected>1%</option><option value="0.02">2%</option><option value="0.03">3%</option></select></label>
+      <label>Show <select id="showAll"><option value="pos">+EV only</option><option value="all">All legs</option></select></label>
+    </div>
+    <div class="scroll"><table id="legsTbl"><thead><tr>
+      <th></th><th>Game</th><th>Pick</th><th>Best price</th><th>Book</th><th>Fair odds</th><th>True win %</th><th>Edge (EV)</th>
+    </tr></thead><tbody></tbody></table></div>
+    <p class="note">Edge = (true win % × decimal payout) − 1. Positive = the book is paying more than the bet is actually worth.</p>
+  </div>
+
+  <!-- MANUAL ADD -->
+  <div class="card">
+    <h2>…or add a leg by hand</h2>
+    <div class="row">
+      <label>Game <input id="mGame" placeholder="KC @ BUF" size="12"></label>
+      <label>Pick <input id="mPick" placeholder="BUF -2.5" size="10"></label>
+      <label>Your book odds <input id="mOdds" placeholder="-105" size="6"></label>
+      <label>Sharp odds (this side) <input id="mSharpA" placeholder="-118" size="6"></label>
+      <label>Sharp odds (other side) <input id="mSharpB" placeholder="+102" size="6"></label>
+      <button id="addManual">Add leg</button>
+    </div>
+    <p class="note">The two sharp sides get de-vigged into a fair probability. No sharp line? Enter your own win % estimate in "this side" as e.g. <code>55%</code> and leave the other blank.</p>
+  </div>
+
+  <div class="grid2">
+    <!-- SLIP -->
+    <div class="card">
+      <h2>3 · Your slip</h2>
+      <div id="slip"><p class="muted">Tap ➕ on legs to add them.</p></div>
+      <div class="row" style="margin-top:10px">
+        <label>Bankroll $ <input id="bankroll" type="number" value="500" style="width:90px"></label>
+        <label>Kelly fraction <select id="kfrac"><option value="0.1">1/10</option><option value="0.25" selected>1/4</option><option value="0.5">1/2</option></select></label>
+      </div>
+      <div id="slipStats"></div>
+    </div>
+
+    <!-- AUTO BUILDER -->
+    <div class="card">
+      <h2>4 · Auto-build best parlays</h2>
+      <div class="row">
+        <label>Legs <select id="nLegs"><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+        <label>Rank by <select id="rankBy">
+          <option value="growth" selected>Bankroll growth (Kelly)</option>
+          <option value="ev">Raw EV %</option>
+          <option value="hit">Hit chance</option>
+        </select></label>
+        <button id="buildBtn">Build</button>
+      </div>
+      <p class="note">Uses only +EV legs, max one leg per game (avoids correlated legs books won't price fairly).</p>
+      <div id="autoOut"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>How the edge works (read this once)</summary>
+      <p><b>Simple:</b> Sharp books like Pinnacle take huge limits from pros and move their lines fast, so their price is the closest thing to the "real" odds. Strip out their fee (the vig) → true win %. When a softer book (DK, FD, MGM…) pays more than that true price, that leg is +EV.</p>
+      <p><b>Why parlays:</b> Parlay EV multiplies. Three legs with +3% edge each ≈ 1.03³ − 1 = +9.3% on the parlay. But three −4.5% legs (normal -110 juice) ≈ −13% — that's why random parlays bleed money.</p>
+      <p><b>Kelly:</b> The stake that maximizes long-run bankroll growth is (b·p − q)/b. Full Kelly is wild on parlays, so default is ¼ Kelly.</p>
+      <p class="warn"><b>Reality check:</b> No tool guarantees wins. A 3-leg parlay at 18% hit chance loses ~4 of 5 times even with an edge. Edges are small, variance is huge, books limit winners. Bet only what you can lose. Problem? 1-800-GAMBLER.</p>
+    </details>
+  </div>
+</div>
+
+<script>
+// ---------- odds math ----------
+const toDec = a => a > 0 ? 1 + a / 100 : 1 + 100 / Math.abs(a);
+const toAm = d => d >= 2 ? '+' + Math.round((d - 1) * 100) : String(Math.round(-100 / (d - 1)));
+const pct = (x, dp = 1) => (x * 100).toFixed(dp) + '%';
+const signPct = x => (x >= 0 ? '+' : '') + (x * 100).toFixed(1) + '%';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// proportional de-vig across any number of outcomes
+const devig = decs => { const inv = decs.map(d => 1 / d); const s = inv.reduce((a, b) => a + b, 0); return inv.map(x => x / s); };
+
+let legs = [];   // {id, game, pick, dec, book, fairP, ev}
+let slip = [];   // leg ids
+
+// ---------- build legs from Odds API payload ----------
+function legsFromEvents(events, sharpKey) {
+  const out = [];
+  for (const ev of events) {
+    const game = `${ev.away_team} @ ${ev.home_team}`;
+    const sharp = ev.bookmakers.find(b => b.key === sharpKey);
+    if (!sharp) continue;
+    for (const sm of sharp.markets) {
+      const fair = devig(sm.outcomes.map(o => toDec(o.price)));
+      sm.outcomes.forEach((so, i) => {
+        const key = so.name + '|' + (so.point ?? '');
+        let best = null;
+        for (const b of ev.bookmakers) {
+          if (b.key === sharpKey) continue;
+          const m = b.markets.find(m => m.key === sm.key); if (!m) continue;
+          const o = m.outcomes.find(o => o.name + '|' + (o.point ?? '') === key); if (!o) continue;
+          const d = toDec(o.price);
+          if (!best || d > best.dec) best = { dec: d, book: b.title };
+        }
+        if (!best) return;
+        const label = sm.key === 'h2h' ? `${so.name} ML`
+          : sm.key === 'spreads' ? `${so.name} ${so.point > 0 ? '+' : ''}${so.point}`
+          : `${so.name} ${so.point}`;
+        out.push({ id: ev.id + sm.key + key, eventId: ev.id, game, pick: label, dec: best.dec, book: best.book,
+          fairP: fair[i], ev: fair[i] * best.dec - 1, start: ev.commence_time });
+      });
+    }
+  }
+  return out;
+}
+
+// ---------- fetch ----------
+const $ = id => document.getElementById(id);
+try { $('apiKey').value = localStorage.getItem('oddsKey') || ''; } catch (e) {}
+
+$('fetchBtn').onclick = async () => {
+  const key = $('apiKey').value.trim();
+  if (!key) { $('fetchStatus').textContent = 'Need an API key (free tier at the-odds-api.com).'; return; }
+  try { localStorage.setItem('oddsKey', key); } catch (e) {}
+  $('fetchStatus').textContent = 'Fetching…';
+  const url = `https://api.the-odds-api.com/v4/sports/${$('sport').value}/odds/?apiKey=${encodeURIComponent(key)}`
+    + `&regions=us,us2,eu&markets=${$('markets').value}&oddsFormat=american`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(r.status + ' ' + (await r.text()).slice(0, 160));
+    const data = await r.json();
+    legs = legsFromEvents(data, $('sharp').value);
+    slip = [];
+    const left = r.headers.get('x-requests-remaining');
+    $('fetchStatus').textContent = `Loaded ${data.length} games → ${legs.length} comparable legs.` + (left ? ` API credits left: ${left}.` : '');
+    renderAll();
+  } catch (e) { $('fetchStatus').textContent = 'Fetch failed: ' + e.message; }
+};
+
+$('demoBtn').onclick = () => {
+  // Fabricated sample odds — for demonstrating the math only.
+  const mk = (id, a, h, mlA, mlH, pA, pH, books) => ({
+    id, away_team: a, home_team: h, commence_time: '',
+    bookmakers: [
+      { key: 'pinnacle', title: 'Pinnacle', markets: [{ key: 'h2h', outcomes: [{ name: a, price: pA }, { name: h, price: pH }] }] },
+      ...books.map(([title, x, y]) => ({ key: title, title, markets: [{ key: 'h2h', outcomes: [{ name: a, price: x }, { name: h, price: y }] }] }))
+    ]
+  });
+  const demo = [
+    mk('g1', 'Hawks', 'Wolves', 0, 0, +135, -150, [['BookA', +145, -170], ['BookB', +130, -155]]),
+    mk('g2', 'Sharks', 'Bears', 0, 0, -120, +104, [['BookA', -110, -110], ['BookB', -125, +105]]),
+    mk('g3', 'Comets', 'Owls', 0, 0, +210, -250, [['BookA', +200, -240], ['BookB', +230, -280]]),
+    mk('g4', 'Pumas', 'Rams', 0, 0, -105, -109, [['BookA', +100, -120], ['BookB', -110, -110]]),
+    mk('g5', 'Vipers', 'Kings', 0, 0, +160, -180, [['BookA', +150, -175], ['BookB', +155, -165]]),
+    mk('g6', 'Foxes', 'Hornets', 0, 0, -300, +255, [['BookA', -280, +240], ['BookB', -310, +270]]),
+  ];
+  legs = legsFromEvents(demo, 'pinnacle'); slip = [];
+  $('fetchStatus').textContent = 'Demo loaded (fake teams + made-up odds).';
+  renderAll();
+};
+
+$('addManual').onclick = () => {
+  const odds = parseFloat($('mOdds').value);
+  const a = $('mSharpA').value.trim(), b = $('mSharpB').value.trim();
+  if (!odds || Math.abs(odds) < 100) return alert('Enter American odds like -110 or +150');
+  let p;
+  if (a.endsWith('%')) p = parseFloat(a) / 100;
+  else if (a && b) p = devig([toDec(+a), toDec(+b)])[0];
+  else return alert('Enter both sharp sides, or a win % like 55%');
+  if (!(p > 0 && p < 1)) return alert('Win % must be between 0 and 100');
+  const dec = toDec(odds), id = 'm' + Date.now();
+  legs.push({ id, eventId: id, game: $('mGame').value || 'Manual', pick: $('mPick').value || 'Pick', dec, book: 'Manual', fairP: p, ev: p * dec - 1 });
+  renderAll();
+};
+
+// ---------- render legs ----------
+function renderLegs() {
+  const min = +$('minEdge').value, all = $('showAll').value === 'all';
+  const rows = legs.filter(l => all || l.ev >= min).sort((a, b) => b.ev - a.ev);
+  $('legCount').textContent = `${rows.length} shown / ${legs.filter(l => l.ev >= min).length} +EV`;
+  $('legsTbl').querySelector('tbody').innerHTML = rows.map(l => `
+    <tr><td><button class="small ${slip.includes(l.id) ? 'ghost' : ''}" data-add="${esc(l.id)}">${slip.includes(l.id) ? '✓' : '➕'}</button></td>
+    <td>${esc(l.game)}</td><td><b>${esc(l.pick)}</b></td><td>${toAm(l.dec)}</td><td>${esc(l.book)}</td>
+    <td class="muted">${toAm(1 / l.fairP)}</td><td>${pct(l.fairP)}</td>
+    <td class="${l.ev >= 0 ? 'good' : 'bad'}">${signPct(l.ev)}</td></tr>`).join('')
+    || `<tr><td colspan="8" class="muted">No legs yet — fetch odds or load the demo.</td></tr>`;
+  document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => {
+    const id = b.dataset.add; slip = slip.includes(id) ? slip.filter(x => x !== id) : [...slip, id]; renderAll();
+  });
+}
+
+// ---------- parlay math ----------
+function parlayStats(ls) {
+  const dec = ls.reduce((a, l) => a * l.dec, 1);
+  const p = ls.reduce((a, l) => a * l.fairP, 1);
+  const ev = p * dec - 1, b = dec - 1;
+  const kelly = Math.max(0, (b * p - (1 - p)) / b);
+  const f = kelly * +$('kfrac').value;
+  // expected log growth per bet at the chosen fraction
+  const growth = f > 0 ? p * Math.log(1 + f * b) + (1 - p) * Math.log(1 - f) : 0;
+  return { dec, p, ev, kelly, f, growth, implied: 1 / dec };
+}
+
+function statsHTML(ls) {
+  const s = parlayStats(ls), bank = +$('bankroll').value || 0, stake = s.f * bank;
+  const sameGame = new Set(ls.map(l => l.eventId)).size < ls.length;
+  return `
+  <div class="stats">
+    <div class="stat"><span class="muted">Odds</span><b>${toAm(s.dec)}</b></div>
+    <div class="stat"><span class="muted">True hit %</span><b>${pct(s.p)}</b></div>
+    <div class="stat"><span class="muted">EV</span><b class="${s.ev >= 0 ? 'good' : 'bad'}">${signPct(s.ev)}</b></div>
+    <div class="stat"><span class="muted">Suggested stake</span><b>$${stake.toFixed(2)}</b></div>
+  </div>
+  <div class="bars">
+    <div class="bar"><span style="width:${Math.min(100, s.p * 100)}%;background:var(--good)"></span></div>
+    <div class="bar"><span style="width:${Math.min(100, s.implied * 100)}%;background:var(--muted)"></span></div>
+    <div class="legend">🟩 true hit chance ${pct(s.p)} &nbsp; ⬜ book thinks ${pct(s.implied)} — green longer = you have the edge</div>
+  </div>
+  <p class="note">$10 pays $${(10 * s.dec).toFixed(2)} · expected profit per $10: <b>${(10 * s.ev >= 0 ? '+' : '')}$${(10 * s.ev).toFixed(2)}</b>
+  ${s.ev < 0 ? '<br><span class="bad">Negative EV — Kelly says bet $0.</span>' : ''}
+  ${sameGame ? '<br><span class="warn">⚠ Two legs from the same game: they are correlated, so this hit % is unreliable and many books will block it.</span>' : ''}</p>`;
+}
+
+function renderSlip() {
+  const ls = slip.map(id => legs.find(l => l.id === id)).filter(Boolean);
+  $('slip').innerHTML = ls.length ? '<ul>' + ls.map(l =>
+    `<li><b>${esc(l.pick)}</b> ${toAm(l.dec)} <span class="muted">(${esc(l.book)}, ${pct(l.fairP)})</span> <span class="${l.ev >= 0 ? 'good' : 'bad'}">${signPct(l.ev)}</span></li>`).join('') + '</ul>'
+    : '<p class="muted">Tap ➕ on legs to add them.</p>';
+  $('slipStats').innerHTML = ls.length >= 2 ? statsHTML(ls) : ls.length ? '<p class="note">Add at least 2 legs for a parlay.</p>' : '';
+}
+
+// ---------- auto builder ----------
+function combos(arr, k, start = 0, cur = [], out = []) {
+  if (cur.length === k) { out.push(cur.slice()); return out; }
+  for (let i = start; i < arr.length; i++) {
+    if (cur.some(c => c.eventId === arr[i].eventId)) continue;
+    cur.push(arr[i]); combos(arr, k, i + 1, cur, out); cur.pop();
+    if (out.length > 20000) break;
+  }
+  return out;
+}
+
+$('buildBtn').onclick = () => {
+  const k = +$('nLegs').value, min = Math.max(0.0001, +$('minEdge').value);
+  const pool = legs.filter(l => l.ev >= min).sort((a, b) => b.ev - a.ev).slice(0, 16);
+  if (pool.length < k) { $('autoOut').innerHTML = `<p class="muted">Only ${pool.length} +EV legs from different games — need ${k}. Lower min edge or legs.</p>`; return; }
+  const key = { growth: s => s.growth, ev: s => s.ev, hit: s => s.p }[$('rankBy').value];
+  const ranked = combos(pool, k).map(c => ({ c, s: parlayStats(c) })).sort((a, b) => key(b.s) - key(a.s)).slice(0, 5);
+  $('autoOut').innerHTML = ranked.map((r, i) => `
+    <div class="parlay"><b>#${i + 1}</b> <span class="chip">${toAm(r.s.dec)}</span>
+      <ul>${r.c.map(l => `<li>${esc(l.pick)} <span class="muted">${toAm(l.dec)} @ ${esc(l.book)}</span></li>`).join('')}</ul>
+      ${statsHTML(r.c)}
+      <button class="small ghost" data-load="${i}">Load into slip</button></div>`).join('');
+  document.querySelectorAll('[data-load]').forEach(b => b.onclick = () => { slip = ranked[+b.dataset.load].c.map(l => l.id); renderAll(); });
+};
+
+function renderAll() { renderLegs(); renderSlip(); }
+['minEdge', 'showAll'].forEach(id => $(id).onchange = renderLegs);
+['bankroll', 'kfrac'].forEach(id => $(id).oninput = renderSlip);
+renderAll();
+</script>
+</body>
+</html>
