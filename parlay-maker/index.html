@@ -2,709 +2,244 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Edge Parlay Lab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Edge Lab</title>
+<meta name="description" content="Daily +EV sports picks, player props and parlays, priced against the sharp no-vig line.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 <style>
   :root {
-    --bg: #f6f7f9; --card: #ffffff; --ink: #14171c; --muted: #5d6673; --line: #e2e5ea;
-    --accent: #2f6fed; --good: #12805c; --bad: #c2362f; --warn: #b26b00; --chip: #eef2f8;
-    --goodbg: #e5f5ee; --badbg: #fbe9e8; --warnbg: #fdf3e1;
+    --bg: #090d14; --panel: #111722; --panel2: #18202e; --ink: #edf1f7; --muted: #8a96a8; --line: #232d3d;
+    --accent: #8b6cff; --accent2: #5b8cff; --edge: #2fe39c; --edgebg: rgba(47, 227, 156, .12);
+    --bad: #ff5d6c; --badbg: rgba(255, 93, 108, .12); --warn: #ffb547; --warnbg: rgba(255, 181, 71, .12);
+    --chip: #1c2534; --shadow: 0 10px 30px rgba(0, 0, 0, .35); --glow: 0 0 0 1px rgba(139, 108, 255, .35), 0 12px 40px rgba(139, 108, 255, .18);
+    color-scheme: dark;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0f1216; --card: #181c22; --ink: #e8ebef; --muted: #98a2ae; --line: #2a3038;
-      --accent: #6c9bff; --good: #3ccf91; --bad: #ff7a70; --warn: #ffb547; --chip: #222831;
-      --goodbg: #13281f; --badbg: #2c1715; --warnbg: #2b2213;
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f3f5fa; --panel: #ffffff; --panel2: #f6f8fc; --ink: #111827; --muted: #5f6b7d; --line: #e3e8f0;
+      --accent: #6a4cf5; --accent2: #3f6ff0; --edge: #0f9f68; --edgebg: rgba(15, 159, 104, .1);
+      --bad: #d63848; --badbg: rgba(214, 56, 72, .09); --warn: #b26b00; --warnbg: rgba(178, 107, 0, .1);
+      --chip: #eef1f7; --shadow: 0 8px 24px rgba(17, 24, 39, .08); --glow: 0 0 0 1px rgba(106, 76, 245, .25), 0 12px 30px rgba(106, 76, 245, .12);
+      color-scheme: light;
     }
   }
+  :root[data-theme="light"] {
+    --bg: #f3f5fa; --panel: #ffffff; --panel2: #f6f8fc; --ink: #111827; --muted: #5f6b7d; --line: #e3e8f0;
+    --accent: #6a4cf5; --accent2: #3f6ff0; --edge: #0f9f68; --edgebg: rgba(15, 159, 104, .1);
+    --bad: #d63848; --badbg: rgba(214, 56, 72, .09); --warn: #b26b00; --warnbg: rgba(178, 107, 0, .1);
+    --chip: #eef1f7; --shadow: 0 8px 24px rgba(17, 24, 39, .08); --glow: 0 0 0 1px rgba(106, 76, 245, .25), 0 12px 30px rgba(106, 76, 245, .12);
+    color-scheme: light;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-  .wrap { max-width: 1150px; margin: 0 auto; padding: 20px 16px 60px; }
-  h1 { font-size: 26px; margin: 0 0 4px; }
-  h2 { font-size: 18px; margin: 0 0 12px; }
-  h3 { font-size: 14px; margin: 14px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-  .sub { color: var(--muted); margin: 0 0 20px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
-  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
-  label { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); gap: 4px; }
-  label.inline { flex-direction: row; align-items: center; gap: 6px; font-size: 13px; color: var(--ink); }
-  input, select, button { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
-    border-radius: 8px; padding: 7px 10px; min-width: 0; }
-  input[type=range] { padding: 0; }
-  button { cursor: pointer; background: var(--accent); color: #fff; border-color: transparent; font-weight: 600; }
-  button.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
-  button.small { padding: 3px 8px; font-size: 12px; }
-  button:disabled { opacity: .5; cursor: default; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-  th { color: var(--muted); font-weight: 600; font-size: 12px; }
-  tr.leg { cursor: pointer; } tr.leg:hover { background: var(--chip); }
-  tr.detail > td { background: var(--bg); padding: 0; }
-  .scroll { overflow-x: auto; }
-  .good { color: var(--good); font-weight: 700; } .bad { color: var(--bad); font-weight: 700; }
-  .warn { color: var(--warn); }
-  .chip { display: inline-block; background: var(--chip); border-radius: 999px; padding: 2px 8px; font-size: 12px; white-space: nowrap; }
-  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tabs button { background: var(--chip); color: var(--ink); font-weight: 500; padding: 4px 12px; border-radius: 999px; }
-  .tabs button.on { background: var(--accent); color: #fff; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.45 Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-feature-settings: "tnum" 1, "cv11" 1; -webkit-font-smoothing: antialiased; padding-bottom: 90px; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto 0; height: 340px; z-index: -1; pointer-events: none;
+    background: radial-gradient(600px 240px at 15% -10%, rgba(139, 108, 255, .28), transparent 70%),
+                radial-gradient(500px 220px at 85% -20%, rgba(47, 227, 156, .16), transparent 70%); }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  img { display: block; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+
+  /* header */
+  header.top { display: flex; align-items: center; gap: 12px; padding: 18px 0 8px; flex-wrap: wrap; }
+  .brand { font-weight: 900; font-size: 22px; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
+  .brand .bolt { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2)); box-shadow: var(--glow); }
+  .brand span.lab { color: var(--accent); }
+  .meta { color: var(--muted); font-size: 13px; flex: 1; min-width: 180px; }
+  .meta b { color: var(--ink); font-weight: 600; }
+  .btn { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 8px 14px; font-weight: 600; font-size: 14px; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; color: #fff; }
+  .btn.small { padding: 5px 10px; font-size: 12px; border-radius: 8px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+
+  /* hero */
+  .hero h1 { font-size: clamp(26px, 4.4vw, 40px); line-height: 1.08; letter-spacing: -.03em; margin: 14px 0 6px; font-weight: 900; }
+  .hero h1 em { font-style: normal; background: linear-gradient(90deg, var(--edge), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { color: var(--muted); margin: 0 0 18px; max-width: 680px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+  @media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpi .v { font-size: 22px; } }
+  .kpi { min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .kpi .l { color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+  .kpi .v { font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-top: 2px; }
+  .kpi .s { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* tabs + filters */
+  .tabs { position: sticky; top: 0; z-index: 20; display: flex; gap: 4px; padding: 10px 0; background: var(--bg); overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { border: 0; background: transparent; color: var(--muted); padding: 8px 14px; border-radius: 10px; font-weight: 700; white-space: nowrap; }
+  .tab.on { background: var(--panel); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 14px; }
+  .chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .filters input, .filters select { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 13px; }
+  .spacer { flex: 1; }
+
+  /* pick cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; }
+  @media (max-width: 400px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px;
+    cursor: pointer; transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease; position: relative; overflow: hidden; }
+  .card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); box-shadow: var(--shadow); }
+  .card.hot::after { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: linear-gradient(90deg, var(--edge), var(--accent2)); }
+  .c-top { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .tag { background: var(--chip); border-radius: 6px; padding: 2px 7px; font-weight: 700; color: var(--ink); font-size: 11px; letter-spacing: .02em; }
+  .c-main { display: flex; align-items: center; gap: 12px; }
+  .avatar { width: 52px; height: 52px; border-radius: 14px; background: var(--chip); flex: none; overflow: hidden; display: grid; place-items: center; font-size: 22px; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar.logo img { object-fit: contain; padding: 6px; }
+  .c-title { flex: 1; min-width: 0; }
+  .c-title .n { font-weight: 800; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-title .p { font-weight: 700; color: var(--accent); font-size: 14px; }
+  .c-title .g { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .price { text-align: right; }
+  .price b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+  .price small { color: var(--muted); font-size: 11px; }
+  .meter { display: grid; grid-template-columns: 54px 1fr 40px; gap: 6px; align-items: center; font-size: 11px; color: var(--muted); }
+  .track { height: 7px; border-radius: 99px; background: var(--chip); overflow: hidden; }
+  .track i { display: block; height: 100%; border-radius: 99px; }
+  .why-mini { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; }
+  .why-mini li { padding: 6px 9px; border-radius: 8px; line-height: 1.35; }
+  li.g { background: var(--edgebg); } li.b { background: var(--badbg); } li.n { background: var(--chip); }
+  .c-foot { display: flex; align-items: center; gap: 8px; margin-top: auto; }
+  .edge { background: var(--edgebg); color: var(--edge); font-weight: 800; border-radius: 8px; padding: 4px 9px; font-size: 13px; }
+  .edge.neg { background: var(--badbg); color: var(--bad); }
+  .vibe { font-weight: 800; font-size: 12px; border-radius: 8px; padding: 3px 8px; }
+  .vibe.v-g { background: var(--edgebg); color: var(--edge); } .vibe.v-b { background: var(--badbg); color: var(--bad); } .vibe.v-n { background: var(--warnbg); color: var(--warn); }
+  .add { margin-left: auto; border: 1px solid var(--line); background: var(--panel2); border-radius: 10px; padding: 6px 12px; font-weight: 700; font-size: 13px; }
+  .add.in { background: var(--edge); color: #04130c; border-color: transparent; }
   .muted { color: var(--muted); }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
-  .stat { display: flex; flex-direction: column; } .stat b { font-size: 22px; }
-  .stats { display: flex; flex-wrap: wrap; gap: 22px; margin: 10px 0; }
-  .bar { position: relative; height: 10px; background: var(--chip); border-radius: 6px; margin: 3px 0; overflow: hidden; }
-  .bar > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; }
-  .legend { font-size: 11px; color: var(--muted); }
-  .parlay { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-  .parlay ul { margin: 6px 0; padding-left: 18px; }
+  .spark { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--muted); }
+  .spark svg { flex: none; }
+  .hitrate { font-weight: 800; color: var(--ink); font-size: 13px; }
+  .sus { color: var(--warn); font-weight: 700; font-size: 11px; }
+
+  /* section heads */
+  .sec { display: flex; align-items: baseline; gap: 10px; margin: 26px 0 10px; }
+  .sec h2 { margin: 0; font-size: 19px; letter-spacing: -.01em; }
+  .sec span { color: var(--muted); font-size: 13px; }
+
+  /* table (lines) */
+  .tbl { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .tbl .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; background: var(--panel2); }
+  tbody tr { cursor: pointer; } tbody tr:hover { background: var(--panel2); }
+  tbody tr:last-child td { border-bottom: 0; }
+
+  /* parlays */
+  .pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  .parlay { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .parlay.feat { box-shadow: var(--glow); }
+  .parlay h3 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+  .parlay h3 .odds { margin-left: auto; font-size: 22px; font-weight: 900; }
+  .parlay .blurb { color: var(--muted); font-size: 12.5px; margin-top: -6px; }
+  .pleg { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 10px; background: var(--panel2); font-size: 13px; }
+  .pleg .avatar { width: 34px; height: 34px; border-radius: 10px; font-size: 15px; }
+  .pleg .t { flex: 1; min-width: 0; } .pleg .t b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; text-align: center; }
+  .pstats div { background: var(--panel2); border-radius: 10px; padding: 8px 4px; }
+  .pstats small { display: block; color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+  .pstats b { font-size: 16px; }
+  .builder { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+  .builder label, .form label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .builder select, .form input, .form select { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+
+  /* slip bar + drawers + modal */
+  .slipbar { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 40; width: min(640px, calc(100% - 24px));
+    background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-radius: 16px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, .4); cursor: pointer; }
+  .slipbar.hide { display: none; }
+  .slipbar .cnt { width: 30px; height: 30px; border-radius: 50%; background: rgba(255, 255, 255, .22); display: grid; place-items: center; font-weight: 900; }
+  .slipbar .sb-odds { font-size: 20px; font-weight: 900; margin-left: auto; }
+  .overlay { position: fixed; inset: 0; background: rgba(4, 7, 12, .6); backdrop-filter: blur(4px); z-index: 50; display: none; }
+  .overlay.show { display: block; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100%); background: var(--panel); border-left: 1px solid var(--line);
+    z-index: 60; transform: translateX(100%); transition: transform .2s ease; display: flex; flex-direction: column; }
+  .drawer.show { transform: none; }
+  .drawer .dh { display: flex; align-items: center; padding: 16px; border-bottom: 1px solid var(--line); gap: 10px; }
+  .drawer .dh h2 { margin: 0; font-size: 18px; flex: 1; }
+  .drawer .db { padding: 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+  .x { border: 0; background: var(--chip); width: 32px; height: 32px; border-radius: 10px; font-size: 16px; }
+  .modal { position: fixed; z-index: 60; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(920px, calc(100% - 20px));
+    max-height: calc(100% - 30px); overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; display: none; box-shadow: var(--shadow); }
+  .modal.show { display: block; }
+  .m-head { position: sticky; top: 0; background: var(--panel); padding: 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; z-index: 2; }
+  .m-head .avatar { width: 58px; height: 58px; }
+  .m-body { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 760px) { .m-body { grid-template-columns: 1fr; } }
+  .m-body h4 { margin: 0 0 8px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .why { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; }
+  .why li { padding: 8px 10px; border-radius: 10px; }
+  .vs { display: grid; grid-template-columns: 1fr 112px 1fr; gap: 6px; align-items: center; font-size: 12px; margin: 4px 0; }
+  .vs .l { display: flex; justify-content: flex-end; align-items: center; gap: 6px; } .vs .r { display: flex; align-items: center; gap: 6px; }
+  .vs .lbl { text-align: center; color: var(--muted); font-size: 10.5px; }
+  .hb { height: 7px; border-radius: 4px; background: var(--accent); }
+  .hb.h { background: var(--accent2); }
+  .dots span { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font-size: 10px; font-weight: 800; color: #fff; margin-right: 3px; }
+  .dots .W { background: var(--edge); color: #04130c; } .dots .L { background: var(--bad); } .dots .T, .dots .D { background: var(--muted); }
+  .inj { font-size: 12.5px; margin: 3px 0; }
+  .st { display: inline-block; min-width: 30px; text-align: center; border-radius: 5px; padding: 0 4px; font-size: 10px; font-weight: 800; margin-right: 6px; }
+  .st.o { background: var(--bad); color: #fff; } .st.d { background: var(--warn); color: #000; } .st.q { background: var(--warnbg); color: var(--warn); } .st.ir { background: var(--chip); color: var(--muted); }
+  .teamcols { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 760px) { .teamcols { grid-template-columns: 1fr; } }
+  .slipleg { display: flex; gap: 10px; align-items: center; background: var(--panel2); border-radius: 12px; padding: 10px; }
+  .slipleg .t { flex: 1; min-width: 0; font-size: 13px; } .slipleg .t b { display: block; }
+  .form { display: flex; flex-direction: column; gap: 12px; }
   .note { font-size: 12px; color: var(--muted); }
-  details summary { cursor: pointer; font-weight: 600; }
-  /* breakdown */
-  .bd { padding: 14px; }
-  .bd-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; font-size: 16px; }
-  .bd-head img { width: 34px; height: 34px; }
-  .bd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  @media (max-width: 760px) { .bd-grid { grid-template-columns: 1fr; } }
-  .why { list-style: none; padding: 0; margin: 0; }
-  .why li { padding: 7px 10px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; }
-  .why li.g { background: var(--goodbg); } .why li.b { background: var(--badbg); } .why li.n { background: var(--chip); }
-  .prob { display: grid; grid-template-columns: 110px 1fr 48px; gap: 8px; align-items: center; font-size: 12px; }
-  .vs { display: grid; grid-template-columns: 1fr 120px 1fr; gap: 6px; align-items: center; font-size: 12px; margin: 3px 0; }
-  .vs .l { display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
-  .vs .r { display: flex; align-items: center; gap: 6px; }
-  .vs .lbl { text-align: center; color: var(--muted); font-size: 11px; }
-  .hb { height: 8px; border-radius: 4px; background: var(--accent); opacity: .75; }
-  .dots span { display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 50%;
-    font-size: 10px; font-weight: 700; color: #fff; margin-right: 3px; }
-  .dots .W { background: var(--good); } .dots .L { background: var(--bad); } .dots .T, .dots .D { background: var(--muted); }
-  .inj { font-size: 12px; margin: 2px 0; }
-  .st { display: inline-block; min-width: 26px; text-align: center; border-radius: 4px; padding: 0 4px; font-size: 10px; font-weight: 700; margin-right: 4px; }
-  .st.o { background: var(--bad); color: #fff; } .st.d { background: var(--warn); color: #fff; } .st.q { background: var(--warnbg); color: var(--warn); }
-  .st.ir { background: var(--chip); color: var(--muted); }
-  .vibe { font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .warnbox { background: var(--warnbg); color: var(--warn); padding: 10px 12px; border-radius: 10px; font-size: 13px; }
+  .empty { text-align: center; padding: 50px 16px; color: var(--muted); background: var(--panel); border: 1px dashed var(--line); border-radius: 16px; }
+  .log { font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--panel2); border-radius: 10px; padding: 10px; max-height: 200px; overflow: auto; white-space: pre-wrap; }
+
+  /* how it works */
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .how .card { cursor: default; } .how .card:hover { transform: none; box-shadow: none; border-color: var(--line); }
+  .how h3 { margin: 0; font-size: 16px; }
+  .how p { margin: 0; font-size: 13.5px; color: var(--muted); }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 16px; }
+  .flow .step { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 13px; font-weight: 600; }
+  .flow .step small { display: block; color: var(--muted); font-weight: 500; }
+  .flow .arr { color: var(--accent); font-weight: 900; }
+  code { background: var(--chip); padding: 1px 6px; border-radius: 6px; font-size: 12.5px; }
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 30px 0 10px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>🎯 Edge Parlay Lab</h1>
-  <p class="sub">Finds +EV legs by comparing every book's price to the <b>sharp, no-vig line</b> (Pinnacle), then <b>tap any leg</b> to see the matchup breakdown: injuries, stats, form, ESPN's model and who's about to cook who.</p>
+  <header class="top">
+    <div class="brand"><div class="bolt">⚡</div>EDGE<span class="lab">LAB</span></div>
+    <div class="meta" id="meta">Loading today's card…</div>
+    <button class="btn" id="liveBtn">↻ Live refresh</button>
+    <button class="btn" id="setBtn" aria-label="Settings">⚙️</button>
+  </header>
 
-  <!-- LIVE ODDS -->
-  <div class="card">
-    <h2>1 · Pull live odds</h2>
-    <div class="row">
-      <label>The Odds API key <input id="apiKey" type="password" placeholder="free at the-odds-api.com" size="26"></label>
-      <label>Sport
-        <select id="sport">
-          <option value="big4">🔥 NFL + NBA + NCAAF + NHL</option>
-          <option value="americanfootball_nfl">NFL</option>
-          <option value="americanfootball_ncaaf">NCAAF</option>
-          <option value="basketball_nba">NBA</option>
-          <option value="basketball_ncaab">NCAAB</option>
-          <option value="icehockey_nhl">NHL</option>
-          <option value="baseball_mlb">MLB</option>
-          <option value="soccer_epl">EPL</option>
-        </select>
-      </label>
-      <label>Markets
-        <select id="markets">
-          <option value="h2h,spreads,totals">ML + spreads + totals</option>
-          <option value="h2h">Moneyline only</option>
-        </select>
-      </label>
-      <label>Books I can bet <select id="books"><option value="us" selected>US books</option><option value="all">All (incl. overseas)</option></select></label>
-      <label>Sharp book <select id="sharp"><option value="pinnacle">Pinnacle</option><option value="betonlineag">BetOnline</option><option value="lowvig">LowVig</option></select></label>
-      <button id="fetchBtn">Fetch odds</button>
-      <button id="demoBtn" class="ghost">Load demo data</button>
-    </div>
-    <p class="note" id="fetchStatus">Your key stays in this browser only. Each sport costs ~9 API credits (ML+spreads+totals). Stats &amp; injuries come free from ESPN.</p>
-  </div>
+  <section class="hero">
+    <h1>Today's card: bets where the book is <em>paying more than the odds say</em>.</h1>
+    <p>Every price is checked against Pinnacle's no-vig line (or the consensus of 3+ books for props), then backed up with injuries, hit rates and matchup stats. Rebuilt automatically every morning.</p>
+    <div class="kpis" id="kpis"></div>
+  </section>
 
-  <!-- LEGS TABLE -->
-  <div class="card">
-    <h2>2 · Leg finder <span class="chip" id="legCount">0 legs</span></h2>
-    <div class="row" style="margin-bottom:10px">
-      <div class="tabs" id="lgTabs"></div>
-    </div>
-    <div class="row" style="margin-bottom:10px">
-      <label>Min edge: <b id="minEdgeLbl">1.0%</b> <input id="minEdge" type="range" min="0" max="6" step="0.5" value="1"></label>
-      <label>Search <input id="search" placeholder="team…" size="12"></label>
-      <label class="inline"><input type="checkbox" id="showAll"> show −EV legs too</label>
-      <button id="scanBtn" class="ghost">🧠 Scan matchups for shown legs</button>
-    </div>
-    <div class="scroll"><table id="legsTbl"><thead><tr>
-      <th></th><th>Lg</th><th>Game</th><th>Pick</th><th>Best price</th><th>Book</th><th>Fair</th><th>True %</th><th>Edge</th><th>Vibe</th>
-    </tr></thead><tbody></tbody></table></div>
-    <p class="note">Tap a row for the breakdown. <b>Vibe</b> = matchup check (injuries, ESPN model, form, stat projection): 🟢 backs it · 🟡 mixed · 🔴 the numbers say fade.</p>
-  </div>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="filters" id="filters"></div>
+  <main id="view"></main>
 
-  <!-- MANUAL ADD -->
-  <div class="card">
-    <details>
-      <summary>➕ Add a leg by hand (props, books not covered…)</summary>
-      <div class="row" style="margin-top:10px">
-        <label>Game <input id="mGame" placeholder="KC @ BUF" size="12"></label>
-        <label>Pick <input id="mPick" placeholder="BUF -2.5" size="10"></label>
-        <label>Your book odds <input id="mOdds" placeholder="-105" size="6"></label>
-        <label>Sharp odds (this side) <input id="mSharpA" placeholder="-118" size="6"></label>
-        <label>Sharp odds (other side) <input id="mSharpB" placeholder="+102" size="6"></label>
-        <button id="addManual">Add leg</button>
-      </div>
-      <p class="note">Two sharp sides get de-vigged into a fair %. No sharp line? Put your own estimate like <code>55%</code> in "this side".</p>
-    </details>
-  </div>
-
-  <div class="grid2">
-    <div class="card">
-      <h2>3 · Your slip</h2>
-      <div id="slip"><p class="muted">Tap ➕ on legs to add them.</p></div>
-      <div class="row" style="margin-top:10px">
-        <label>Bankroll $ <input id="bankroll" type="number" value="500" style="width:90px"></label>
-        <label>Kelly fraction <select id="kfrac"><option value="0.1">1/10</option><option value="0.25" selected>1/4</option><option value="0.5">1/2</option></select></label>
-      </div>
-      <div id="slipStats"></div>
-    </div>
-
-    <div class="card">
-      <h2>4 · Auto-build best parlays</h2>
-      <div class="row">
-        <label>Legs <select id="nLegs"><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
-        <label>Rank by <select id="rankBy">
-          <option value="growth" selected>Bankroll growth (Kelly)</option>
-          <option value="ev">Raw EV %</option>
-          <option value="hit">Hit chance</option>
-          <option value="vibe">Matchup vibe</option>
-        </select></label>
-        <label class="inline"><input type="checkbox" id="noRed" checked> skip 🔴 legs</label>
-        <button id="buildBtn">Build</button>
-      </div>
-      <p class="note">+EV legs only (edges over 15% are skipped as probably-bad lines), max one leg per game (same-game legs are correlated). Run 🧠 Scan first so vibes count.</p>
-      <div id="autoOut"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <details>
-      <summary>How the edge works (read this once)</summary>
-      <p><b>Simple:</b> Sharp books like Pinnacle take huge bets from pros and move fast, so their price ≈ the real odds. Strip their fee (the vig) → true win %. When DK/FD/etc. pay more than that, the leg is +EV.</p>
-      <p><b>The matchup layer:</b> the price edge is the math. The breakdown is the <i>why</i> — if the Jets are +EV and the Chiefs are missing two corners, that's a story that backs the number. If the edge exists because your book hasn't reacted to a QB being ruled out, the vibe goes 🔴 and you should stay away (the sharp line already knows).</p>
-      <p><b>Parlay math:</b> edges multiply. Three +3% legs ≈ +9.3%. Three normal −110 legs ≈ −13%.</p>
-      <p><b>Kelly:</b> stake = (b·p − q)/b of bankroll; default ¼ Kelly because parlays are high variance.</p>
-      <p class="warn"><b>Reality check:</b> nothing here guarantees wins. Injury notes are rules of thumb from ESPN data, not scouting. Bet small, bet what you can lose. 1-800-GAMBLER.</p>
-    </details>
-  </div>
+  <footer>Odds: The Odds API · Stats &amp; injuries: ESPN · Not betting advice. No edge is a guarantee — bet small, bet what you can lose. Problem? 1-800-GAMBLER.</footer>
 </div>
 
-<script>
-// ================= odds math =================
-const toDec = a => a > 0 ? 1 + a / 100 : 1 + 100 / Math.abs(a);
-const toAm = d => d >= 2 ? '+' + Math.round((d - 1) * 100) : String(Math.round(-100 / (d - 1)));
-const pct = (x, dp = 1) => (x * 100).toFixed(dp) + '%';
-const signPct = x => (x >= 0 ? '+' : '') + (x * 100).toFixed(1) + '%';
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-// power de-vig: find k so that sum(implied^k) = 1 (doesn't overrate longshots)
-const devig = decs => {
-  const inv = decs.map(d => 1 / d);
-  let lo = 1, hi = 3;
-  for (let n = 0; n < 60; n++) { const k = (lo + hi) / 2; inv.reduce((a, x) => a + x ** k, 0) > 1 ? lo = k : hi = k; }
-  return inv.map(x => x ** lo);
-};
+<div class="slipbar hide" id="slipbar"></div>
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer"><div class="dh"><h2 id="drawerTitle"></h2><button class="x" data-close>✕</button></div><div class="db" id="drawerBody"></div></aside>
+<div class="modal" id="modal"></div>
 
-const SPORTS = {
-  americanfootball_nfl: { lg: 'NFL', espn: 'football/nfl', kind: 'fb' },
-  americanfootball_ncaaf: { lg: 'NCAAF', espn: 'football/college-football', q: '&groups=80&limit=300', kind: 'fb' },
-  basketball_nba: { lg: 'NBA', espn: 'basketball/nba', kind: 'bb' },
-  basketball_ncaab: { lg: 'NCAAB', espn: 'basketball/mens-college-basketball', q: '&groups=50&limit=400', kind: 'bb' },
-  icehockey_nhl: { lg: 'NHL', espn: 'hockey/nhl', kind: 'hk' },
-  baseball_mlb: { lg: 'MLB', espn: 'baseball/mlb', kind: 'other' },
-  soccer_epl: { lg: 'EPL', espn: 'soccer/eng.1', kind: 'other' },
-  demo: { lg: 'DEMO' },
-};
-
-let legs = [];        // {id,eventId,sport,lg,game,home,away,team,market,point,pick,dec,book,fairP,ev,start}
-let slip = [];
-let fairML = {};      // eventId -> {teamName: fairP}
-const breakdowns = {};   // eventId -> Promise<bd|null>
-const vibes = {};        // leg.id -> {score, items}
-let openLeg = null, lgFilter = 'ALL';
-
-// ================= Odds API → legs =================
-function legsFromEvents(events, sharpKey, sport) {
-  const out = [];
-  for (const ev of events) {
-    const sharp = ev.bookmakers.find(b => b.key === sharpKey);
-    if (!sharp) continue;
-    if (ev.commence_time && new Date(ev.commence_time) < Date.now()) continue;
-    for (const sm of sharp.markets) {
-      const fair = devig(sm.outcomes.map(o => toDec(o.price)));
-      if (sm.key === 'h2h') { fairML[ev.id] = {}; sm.outcomes.forEach((o, i) => fairML[ev.id][o.name] = fair[i]); }
-      sm.outcomes.forEach((so, i) => {
-        const key = so.name + '|' + (so.point ?? '');
-        const prices = [];
-        for (const b of ev.bookmakers) {
-          if (b.key === sharpKey) continue;
-          const m = b.markets.find(m => m.key === sm.key); if (!m) continue;
-          const o = m.outcomes.find(o => o.name + '|' + (o.point ?? '') === key); if (!o) continue;
-          prices.push({ key: b.key, title: b.title, dec: toDec(o.price) });
-        }
-        if (!prices.length) return;
-        const pick = sm.key === 'h2h' ? `${so.name} ML`
-          : sm.key === 'spreads' ? `${so.name} ${so.point > 0 ? '+' : ''}${so.point}`
-          : `${so.name} ${so.point}`;
-        out.push({ id: ev.id + sm.key + key, eventId: ev.id, sport, lg: SPORTS[sport]?.lg || sport,
-          game: `${ev.away_team} @ ${ev.home_team}`, home: ev.home_team, away: ev.away_team,
-          team: sm.key === 'totals' ? null : so.name, market: sm.key, point: so.point,
-          pick, prices, fairP: fair[i], start: ev.commence_time });
-      });
-    }
-  }
-  return out;
-}
-
-// Best price among the books the user can actually bet. Legs with no allowed book get dec = null.
-const US_BOOKS = /^(draftkings|fanduel|betmgm|williamhill_us|espnbet|betrivers|fanatics|ballybet|hardrockbet|betonlineag|bovada|mybookieag|lowvig|betus|betparx|fliff|rebet|betanysports)/;
-const STALE = 0.15;
-function applyBooks() {
-  const all = $('books').value === 'all';
-  for (const l of legs) {
-    if (!l.prices) continue;
-    const best = l.prices.filter(p => all || US_BOOKS.test(p.key)).sort((a, b) => b.dec - a.dec)[0];
-    l.dec = best?.dec ?? null; l.book = best?.title ?? ''; l.ev = best ? l.fairP * best.dec - 1 : -1;
-  }
-}
-const usable = l => l.dec != null;
-
-const $ = id => document.getElementById(id);
-try { $('apiKey').value = localStorage.getItem('oddsKey') || ''; } catch (e) {}
-
-$('fetchBtn').onclick = async () => {
-  const key = $('apiKey').value.trim();
-  if (!key) { $('fetchStatus').textContent = 'Need an API key (free tier at the-odds-api.com).'; return; }
-  try { localStorage.setItem('oddsKey', key); } catch (e) {}
-  const sports = $('sport').value === 'big4'
-    ? ['americanfootball_nfl', 'basketball_nba', 'americanfootball_ncaaf', 'icehockey_nhl'] : [$('sport').value];
-  $('fetchStatus').textContent = 'Fetching…';
-  legs = []; slip = []; fairML = {}; openLeg = null;
-  let games = 0, left = '', errs = [];
-  for (const s of sports) {
-    try {
-      const r = await fetch(`https://api.the-odds-api.com/v4/sports/${s}/odds/?apiKey=${encodeURIComponent(key)}`
-        + `&regions=us,us2,eu&markets=${$('markets').value}&oddsFormat=american`);
-      if (!r.ok) throw new Error(r.status + ' ' + (await r.text()).slice(0, 120));
-      const data = await r.json(); games += data.length;
-      legs.push(...legsFromEvents(data, $('sharp').value, s));
-      left = r.headers.get('x-requests-remaining') || left;
-    } catch (e) { errs.push(`${SPORTS[s]?.lg || s}: ${e.message}`); }
-  }
-  $('fetchStatus').textContent = `Loaded ${games} games → ${legs.length} comparable legs.` + (left ? ` API credits left: ${left}.` : '')
-    + (errs.length ? ' Errors: ' + errs.join('; ') : '');
-  renderAll();
-};
-
-$('demoBtn').onclick = () => {
-  // Fabricated sample odds — for demonstrating the math only.
-  const mk = (id, a, h, pA, pH, books) => ({
-    id, away_team: a, home_team: h, commence_time: '',
-    bookmakers: [
-      { key: 'pinnacle', title: 'Pinnacle', markets: [{ key: 'h2h', outcomes: [{ name: a, price: pA }, { name: h, price: pH }] }] },
-      ...books.map(([title, x, y]) => ({ key: title, title, markets: [{ key: 'h2h', outcomes: [{ name: a, price: x }, { name: h, price: y }] }] }))
-    ]
-  });
-  const demo = [
-    mk('g1', 'Hawks', 'Wolves', +135, -150, [['BookA', +145, -170], ['BookB', +130, -155]]),
-    mk('g2', 'Sharks', 'Bears', -120, +104, [['BookA', -110, -110], ['BookB', -125, +105]]),
-    mk('g3', 'Comets', 'Owls', +210, -250, [['BookA', +200, -240], ['BookB', +250, -280]]),
-    mk('g4', 'Pumas', 'Rams', -105, -109, [['BookA', +108, -120], ['BookB', -110, -110]]),
-    mk('g5', 'Vipers', 'Kings', +160, -180, [['BookA', +150, -175], ['BookB', +155, -150]]),
-    mk('g6', 'Foxes', 'Hornets', -300, +255, [['BookA', -280, +240], ['BookB', -310, +270]]),
-  ];
-  fairML = {}; legs = legsFromEvents(demo, 'pinnacle', 'demo'); slip = []; openLeg = null;
-  $('fetchStatus').textContent = 'Demo loaded (fake teams + made-up odds, so no matchup data).';
-  renderAll();
-};
-
-$('addManual').onclick = () => {
-  const odds = parseFloat($('mOdds').value);
-  const a = $('mSharpA').value.trim(), b = $('mSharpB').value.trim();
-  if (!odds || Math.abs(odds) < 100) return alert('Enter American odds like -110 or +150');
-  let p;
-  if (a.endsWith('%')) p = parseFloat(a) / 100;
-  else if (a && b) p = devig([toDec(+a), toDec(+b)])[0];
-  else return alert('Enter both sharp sides, or a win % like 55%');
-  if (!(p > 0 && p < 1)) return alert('Win % must be between 0 and 100');
-  const dec = toDec(odds), id = 'm' + Date.now();
-  legs.push({ id, eventId: id, sport: 'manual', lg: 'MAN', game: $('mGame').value || 'Manual', pick: $('mPick').value || 'Pick',
-    dec, book: 'Manual', fairP: p, ev: p * dec - 1 });
-  renderAll();
-};
-
-// ================= ESPN matchup data =================
-const jcache = {};
-const getJSON = url => jcache[url] ||= fetch(url).then(r => r.ok ? r.json() : Promise.reject(new Error(r.status)));
-const etDate = iso => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date(iso)).replaceAll('-', '');
-const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
-function teamMatches(espnTeam, name) {
-  const n = norm(name), d = norm(espnTeam.displayName);
-  if (n === d) return 3;
-  const nick = norm(espnTeam.name), loc = norm(espnTeam.location);
-  if (nick && loc && n.includes(nick) && n.includes(loc.split(' ')[0])) return 2;
-  if (nick && n.endsWith(nick)) return 1;
-  return 0;
-}
-
-function getBreakdown(leg) {
-  return breakdowns[leg.eventId] ||= (async () => {
-    const S = SPORTS[leg.sport];
-    if (!S?.espn || !leg.start) return null;
-    const base = `https://site.api.espn.com/apis/site/v2/sports/${S.espn}`;
-    const sb = await getJSON(`${base}/scoreboard?dates=${etDate(leg.start)}${S.q || ''}`);
-    let best = null, bestScore = 0;
-    for (const e of sb.events || []) {
-      const cs = e.competitions[0].competitors;
-      const h = cs.find(c => c.homeAway === 'home'), a = cs.find(c => c.homeAway === 'away');
-      if (!h || !a) continue;
-      const sc = Math.min(teamMatches(h.team, leg.home), teamMatches(a.team, leg.away));
-      if (sc > bestScore) { bestScore = sc; best = { e, h, a }; }
-    }
-    if (!best) return null;
-    const sum = await getJSON(`${base}/summary?event=${best.e.id}`);
-    const side = c => {
-      const id = c.team.id;
-      const stats = {};
-      for (const t of sum.boxscore?.teams || []) if (t.team.id === id)
-        for (const s of t.statistics || []) stats[s.label || s.name] = s.displayValue;
-      const injuries = (sum.injuries || []).find(t => t.team.id === id)?.injuries?.map(p => ({
-        id: p.athlete?.id, name: p.athlete?.displayName, pos: p.athlete?.position?.abbreviation || '',
-        status: p.status || '', type: p.details?.type || p.type?.description || '', ret: p.details?.returnDate || ''
-      })) || [];
-      const leaders = [];
-      for (const c2 of (sum.leaders || []).find(t => t.team.id === id)?.leaders || []) {
-        const x = c2.leaders?.[0]; if (!x) continue;
-        leaders.push({ cat: c2.name, label: c2.displayName, id: x.athlete?.id, name: x.athlete?.displayName,
-          pos: x.athlete?.position?.abbreviation || '', val: x.displayValue });
-      }
-      const l5 = (sum.lastFiveGames || []).find(t => t.team.id === id)?.events?.map(g => ({
-        r: g.gameResult, opp: g.opponent?.abbreviation, sc: g.score, at: g.atVs })) || [];
-      return { id, abbr: c.team.abbreviation, name: c.team.displayName, logo: c.team.logo,
-        rec: c.records?.find(r => r.type === 'total' || r.name === 'overall')?.summary || '', stats, injuries, leaders, l5 };
-    };
-    const home = side(best.h), away = side(best.a);
-    const pr = sum.predictor;
-    let model = null;
-    if (pr?.homeTeam?.gameProjection) model = { [home.name]: +pr.homeTeam.gameProjection / 100, [away.name]: +pr.awayTeam.gameProjection / 100 };
-    return { home, away, model, kind: S.kind, espnId: best.e.id };
-  })().catch(() => null);
-}
-
-// ================= the "why" engine =================
-const MISSING = s => /^(out|doubtful|injured reserve|suspension)/i.test(s);
-const FRESH = s => /^(out|doubtful)/i.test(s);
-const POS = {
-  db: new Set(['CB', 'S', 'FS', 'SS', 'DB', 'NB']),
-  front: new Set(['DE', 'DT', 'NT', 'LB', 'OLB', 'ILB', 'MLB', 'EDGE', 'DL']),
-  ol: new Set(['OT', 'OG', 'C', 'G', 'T', 'OL', 'LT', 'RT', 'LG', 'RG']),
-};
-const missingOf = t => t.injuries.filter(p => MISSING(p.status));
-const isOut = (t, id) => id && t.injuries.some(p => p.id === id && MISSING(p.status));
-const names = ps => ps.slice(0, 3).map(p => `${p.name} (${p.pos}${FRESH(p.status) ? '' : ', IR'})`).join(', ') + (ps.length > 3 ? ` +${ps.length - 3} more` : '');
-const leader = (t, re) => t.leaders.find(l => re.test(l.cat) && !isOut(t, l.id));
-const statNum = (t, re) => { for (const k in t.stats) if (re.test(k)) { const v = parseFloat(t.stats[k]); if (!isNaN(v)) return v; } return null; };
-
-// Things that help attacker A against defender D. Returned as [text] — tone is set by the caller.
-function attackNotes(A, D, kind) {
-  const out = [], miss = missingOf(D);
-  if (kind === 'fb') {
-    const db = miss.filter(p => POS.db.has(p.pos)), fr = miss.filter(p => POS.front.has(p.pos)), ol = miss.filter(p => POS.ol.has(p.pos));
-    if (db.length) { const r = leader(A, /receiv/i); out.push(`🔥 ${r ? `<b>${esc(r.name)}</b> (${esc(r.val)})` : esc(A.abbr) + "'s passing game"} should cook a ${esc(D.abbr)} secondary missing ${esc(names(db))}`); }
-    if (fr.length) { const r = leader(A, /rush/i); out.push(`🔥 ${r ? `<b>${esc(r.name)}</b> (${esc(r.val)})` : esc(A.abbr) + "'s run game"} runs at a ${esc(D.abbr)} front missing ${esc(names(fr))}`); }
-    if (ol.length) { const r = leader(A, /sack/i); out.push(`💥 ${r ? `<b>${esc(r.name)}</b> (${esc(r.val)} sacks)` : esc(A.abbr) + "'s pass rush"} gets a ${esc(D.abbr)} O-line missing ${esc(names(ol))}`); }
-    for (const l of D.leaders) if (isOut(D, l.id)) out.push(`🚨 ${esc(D.abbr)} is without its ${esc(l.label.toLowerCase())} leader <b>${esc(l.name)}</b> (${esc(l.pos)}, ${esc(l.val)})`);
-    const qb = miss.find(p => p.pos === 'QB' && FRESH(p.status));
-    if (qb && !D.leaders.some(l => l.id === qb.id)) out.push(`⚠️ ${esc(D.abbr)} QB ${esc(qb.name)} is ${esc(qb.status.toLowerCase())}`);
-  } else if (kind === 'bb') {
-    const outD = D.leaders.filter(l => isOut(D, l.id));
-    for (const l of outD) {
-      const mine = leader(A, /point/i);
-      out.push(`📉 ${esc(D.abbr)} without <b>${esc(l.name)}</b> (${esc(l.label)} leader, ${esc(l.val)}) — easier night for ${mine ? `<b>${esc(mine.name)}</b>` : esc(A.abbr)}`);
-    }
-    const bigs = miss.filter(p => /C/.test(p.pos) && !outD.some(l => l.id === p.id));
-    if (bigs.length) { const r = leader(A, /rebound/i); if (r) out.push(`🔥 <b>${esc(r.name)}</b> (${esc(r.val)} reb) should feast on the glass — ${esc(D.abbr)} missing ${esc(names(bigs))}`); }
-    const guards = miss.filter(p => /G/.test(p.pos) && !outD.some(l => l.id === p.id));
-    if (guards.length) { const r = leader(A, /assist|point/i); if (r) out.push(`🔥 <b>${esc(r.name)}</b> gets a thinner ${esc(D.abbr)} backcourt — missing ${esc(names(guards))}`); }
-  } else if (kind === 'hk') {
-    const g = miss.find(p => p.pos === 'G');
-    if (g) out.push(`🥅 ${esc(D.abbr)} goalie <b>${esc(g.name)}</b> is ${esc(g.status.toLowerCase())} — ${esc(A.abbr)} may face a backup`);
-    for (const l of D.leaders) if (isOut(D, l.id)) out.push(`🚨 ${esc(D.abbr)} without ${esc(l.label.toLowerCase())} leader <b>${esc(l.name)}</b> (${esc(l.val)})`);
-  }
-  return out;
-}
-
-// Usage bumps on a team that lost a leader ("this guy is out so this guy eats")
-function usageNotes(T, kind) {
-  const out = [];
-  for (const l of T.leaders) if (isOut(T, l.id)) {
-    const next = T.leaders.find(x => x.id !== l.id && !isOut(T, x.id));
-    if (next && kind !== 'fb') out.push(`📈 With <b>${esc(l.name)}</b> out, <b>${esc(next.name)}</b> (${esc(next.label)} ${esc(next.val)}) should get more of the load for ${esc(T.abbr)} — check his props`);
-    if (kind === 'fb' && /pass/i.test(l.cat)) out.push(`📈 ${esc(T.abbr)} likely leans on the run game without <b>${esc(l.name)}</b> — their rusher's props get interesting`);
-  }
-  return out;
-}
-
-function projection(bd) {
-  const off = /points per game|goals for per game/i, def = /points against|points allowed|goals against average/i;
-  const hO = statNum(bd.home, off), hD = statNum(bd.home, def), aO = statNum(bd.away, off), aD = statNum(bd.away, def);
-  if ([hO, hD, aO, aD].some(v => v == null)) return null;
-  const home = (hO + aD) / 2, away = (aO + hD) / 2;
-  return { home, away, total: home + away };
-}
-
-function analyze(leg, bd) {
-  const items = []; let score = 0;
-  const add = (tone, text) => { items.push({ tone, text }); score += tone === 'g' ? 1 : tone === 'b' ? -1 : 0; };
-  const P = leg.team ? (norm(leg.team) === norm(leg.home) ? bd.home : bd.away) : null;
-  const O = P ? (P === bd.home ? bd.away : bd.home) : null;
-
-  // 1. ESPN model vs market
-  if (P && bd.model) {
-    const m = bd.model[P.name], f = fairML[leg.eventId]?.[leg.team];
-    if (m != null && f != null) {
-      const d = m - f;
-      if (d >= 0.03) add('g', `🤖 ESPN's model gives ${esc(P.abbr)} <b>${pct(m)}</b> to win vs market ${pct(f)} — model likes them even more`);
-      else if (d <= -0.05) add('b', `🤖 ESPN's model only gives ${esc(P.abbr)} <b>${pct(m)}</b> vs market ${pct(f)} — model disagrees`);
-      else add('n', `🤖 ESPN's model (${pct(m)}) roughly agrees with the market (${pct(f)})`);
-    }
-  }
-  // 2. injuries / who fries who
-  if (P) {
-    attackNotes(P, O, bd.kind).forEach(t => add('g', t));
-    attackNotes(O, P, bd.kind).forEach(t => add('b', t));
-    usageNotes(P, bd.kind).forEach(t => add('n', t));
-    usageNotes(O, bd.kind).forEach(t => add('n', t));
-  } else {
-    // totals: missing defenders → over; missing offensive leaders → under
-    const over = /^over/i.test(leg.pick);
-    const defNotes = [...attackNotes(bd.home, bd.away, bd.kind), ...attackNotes(bd.away, bd.home, bd.kind)];
-    defNotes.forEach(t => add(/🚨|⚠️/.test(t) ? (over ? 'b' : 'g') : (over ? 'g' : 'b'), t));
-    [...usageNotes(bd.home, bd.kind), ...usageNotes(bd.away, bd.kind)].forEach(t => add('n', t));
-  }
-  // 3. stat projection
-  const pj = projection(bd);
-  if (pj) {
-    if (leg.market === 'totals') {
-      const diff = pj.total - leg.point, over = /^over/i.test(leg.pick);
-      const tone = Math.abs(diff) < 1 ? 'n' : (diff > 0) === over ? 'g' : 'b';
-      add(tone, `📊 Season scoring averages project <b>${pj.total.toFixed(1)}</b> total vs line ${leg.point} (${diff > 0 ? 'leans over' : 'leans under'})`);
-    } else if (P) {
-      const mine = P === bd.home ? pj.home : pj.away, theirs = P === bd.home ? pj.away : pj.home;
-      const margin = mine - theirs, need = leg.market === 'spreads' ? -leg.point : 0;
-      const tone = Math.abs(margin - need) < 1.5 ? 'n' : margin > need ? 'g' : 'b';
-      add(tone, `📊 Season averages project ${esc(P.abbr)} ${mine.toFixed(1)} – ${theirs.toFixed(1)} ${esc(O.abbr)}` +
-        (leg.market === 'spreads' ? ` (needs to ${need > 0 ? 'win by ' + need : 'lose by less than ' + (-need)})` : ''));
-    }
-  }
-  // 4. form
-  if (P && P.l5.length && O.l5.length) {
-    const w = t => t.l5.filter(g => g.r === 'W').length;
-    const d = w(P) - w(O);
-    add(d >= 2 ? 'g' : d <= -2 ? 'b' : 'n', `📈 Form: ${esc(P.abbr)} ${w(P)}-${P.l5.length - w(P)} last ${P.l5.length}, ${esc(O.abbr)} ${w(O)}-${O.l5.length - w(O)}`);
-  }
-  if (!items.length) add('n', 'Not much matchup data for this one — the edge is pure price.');
-  return { score, items };
-}
-
-const vibeBadge = v => !v ? '<span class="muted">—</span>'
-  : v.score >= 2 ? `<span class="vibe good">🟢 +${v.score}</span>`
-  : v.score <= -2 ? `<span class="vibe bad">🔴 ${v.score}</span>`
-  : `<span class="vibe warn">🟡 ${v.score >= 0 ? '+' : ''}${v.score}</span>`;
-
-async function vibeFor(leg) {
-  if (vibes[leg.id]) return vibes[leg.id];
-  const bd = await getBreakdown(leg);
-  return vibes[leg.id] = bd ? analyze(leg, bd) : { score: 0, items: [{ tone: 'n', text: 'No ESPN matchup data found for this game.' }], none: true };
-}
-
-// ================= breakdown view =================
-const stBadge = s => /^out/i.test(s) ? '<span class="st o">OUT</span>' : /^doubt/i.test(s) ? '<span class="st d">D</span>'
-  : /^quest|day/i.test(s) ? '<span class="st q">Q</span>' : /reserve/i.test(s) ? '<span class="st ir">IR</span>' : `<span class="st ir">${esc(s.slice(0, 3))}</span>`;
-
-function breakdownHTML(leg, bd, v) {
-  if (!bd) return `<div class="bd"><ul class="why">${v.items.map(i => `<li class="n">${i.text}</li>`).join('')}</ul></div>`;
-  const P = leg.team ? (norm(leg.team) === norm(leg.home) ? bd.home : bd.away) : null;
-  const when = leg.start ? new Date(leg.start).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : '';
-  // probability bars
-  let probs = '';
-  if (P) {
-    const rows = [['Market fair', fairML[leg.eventId]?.[leg.team], 'var(--good)'],
-      ['ESPN model', bd.model?.[P.name], 'var(--accent)'],
-      ['Book implied', leg.market === 'h2h' ? 1 / leg.dec : null, 'var(--muted)']].filter(r => r[1] != null);
-    probs = `<h3>${esc(P.abbr)} win chance</h3>` + rows.map(([l, p, c]) =>
-      `<div class="prob"><span>${l}</span><div class="bar"><span style="width:${p * 100}%;background:${c}"></span></div><b>${pct(p, 0)}</b></div>`).join('');
-  }
-  // stat comparison (away left, home right)
-  const isNum = v => /^-?[\d.,]+%?$/.test(String(v).trim());
-  const keys = Object.keys(bd.away.stats).filter(k => k in bd.home.stats && isNum(bd.home.stats[k]) && isNum(bd.away.stats[k])).slice(0, 9);
-  const vsRows = keys.map(k => {
-    const a = parseFloat(String(bd.away.stats[k]).replace(/,/g, '')), h = parseFloat(String(bd.home.stats[k]).replace(/,/g, '')), m = Math.max(Math.abs(a), Math.abs(h)) || 1;
-    return `<div class="vs"><div class="l">${esc(bd.away.stats[k])}<div class="hb" style="width:${Math.abs(a) / m * 100}%"></div></div>
-      <div class="lbl">${esc(k)}</div><div class="r"><div class="hb" style="width:${Math.abs(h) / m * 100}%"></div>${esc(bd.home.stats[k])}</div></div>`;
-  }).join('');
-  const pj = projection(bd);
-  const teamCol = t => `
-    <div>
-      <h3>${esc(t.abbr)} · last 5</h3>
-      <div class="dots">${t.l5.map(g => `<span class="${esc(g.r)}" title="${esc(g.at)} ${esc(g.opp)} ${esc(g.sc)}">${esc(g.r)}</span>`).join('') || '<span class="muted">—</span>'}</div>
-      <h3>${esc(t.abbr)} · leaders</h3>
-      ${t.leaders.map(l => `<div class="inj">${isOut(t, l.id) ? '<span class="st o">OUT</span>' : ''}<b>${esc(l.label)}:</b> ${esc(l.name)} <span class="muted">${esc(l.val)}</span></div>`).join('') || '<span class="muted">—</span>'}
-      <h3>${esc(t.abbr)} · injuries</h3>
-      ${t.injuries.length ? t.injuries.slice(0, 10).map(p => `<div class="inj">${stBadge(p.status)}${esc(p.name)} <span class="muted">${esc(p.pos)} · ${esc(p.type)}</span></div>`).join('')
-        + (t.injuries.length > 10 ? `<div class="note">+${t.injuries.length - 10} more</div>` : '') : '<span class="muted">None listed</span>'}
-    </div>`;
-  return `<div class="bd">
-    <div class="bd-head">
-      ${bd.away.logo ? `<img src="${esc(bd.away.logo)}" alt="">` : ''}${esc(bd.away.name)} <span class="muted">${esc(bd.away.rec)}</span>
-      <span class="muted">@</span>
-      ${bd.home.logo ? `<img src="${esc(bd.home.logo)}" alt="">` : ''}${esc(bd.home.name)} <span class="muted">${esc(bd.home.rec)}</span>
-      <span class="chip">${esc(when)}</span> <span class="chip">Pick: ${esc(leg.pick)} ${toAm(leg.dec)} @ ${esc(leg.book)}</span>
-    </div>
-    <div class="bd-grid" style="margin-top:12px">
-      <div>
-        <h3>Why this leg ${vibeBadge(v)}</h3>
-        <ul class="why">${v.items.map(i => `<li class="${i.tone}">${i.text}</li>`).join('')}</ul>
-        ${probs}
-      </div>
-      <div>
-        <h3>Season stats · ${esc(bd.away.abbr)} vs ${esc(bd.home.abbr)}</h3>
-        ${vsRows || '<span class="muted">No team stats</span>'}
-        ${pj ? `<p class="note">Projection from season averages: ${esc(bd.away.abbr)} ${pj.away.toFixed(1)} – ${esc(bd.home.abbr)} ${pj.home.toFixed(1)} (total ${pj.total.toFixed(1)})</p>` : ''}
-      </div>
-    </div>
-    <div class="bd-grid">${teamCol(bd.away)}${teamCol(bd.home)}</div>
-    <p class="note">Data: ESPN. Injury → matchup notes are rules of thumb, not film study. IR = long-term, probably already in the line.</p>
-  </div>`;
-}
-
-// ================= render legs =================
-function shownLegs() {
-  const min = +$('minEdge').value / 100, all = $('showAll').checked, q = norm($('search').value);
-  return legs.filter(l => usable(l) && (all || l.ev >= min) && (lgFilter === 'ALL' || l.lg === lgFilter) && (!q || norm(l.game + ' ' + l.pick).includes(q)))
-    .sort((a, b) => b.ev - a.ev);
-}
-
-function renderTabs() {
-  const lgs = ['ALL', ...new Set(legs.map(l => l.lg))];
-  if (!lgs.includes(lgFilter)) lgFilter = 'ALL';
-  $('lgTabs').innerHTML = lgs.length > 2 ? lgs.map(l => `<button class="${l === lgFilter ? 'on' : ''}" data-lg="${esc(l)}">${esc(l)}</button>`).join('') : '';
-  document.querySelectorAll('[data-lg]').forEach(b => b.onclick = () => { lgFilter = b.dataset.lg; renderLegs(); renderTabs(); });
-}
-
-function renderLegs() {
-  $('minEdgeLbl').textContent = (+$('minEdge').value).toFixed(1) + '%';
-  const rows = shownLegs(), min = +$('minEdge').value / 100;
-  $('legCount').textContent = `${rows.length} shown · ${legs.filter(l => usable(l) && l.ev >= min).length} +EV`;
-  const tb = $('legsTbl').querySelector('tbody');
-  tb.innerHTML = rows.map(l => `
-    <tr class="leg" data-open="${esc(l.id)}"><td><button class="small ${slip.includes(l.id) ? 'ghost' : ''}" data-add="${esc(l.id)}">${slip.includes(l.id) ? '✓' : '➕'}</button></td>
-    <td><span class="chip">${esc(l.lg)}</span></td>
-    <td>${esc(l.game)}</td><td><b>${esc(l.pick)}</b></td><td>${toAm(l.dec)}</td><td>${esc(l.book)}</td>
-    <td class="muted">${toAm(1 / l.fairP)}</td><td>${pct(l.fairP)}</td>
-    <td class="${l.ev >= 0 ? 'good' : 'bad'}">${signPct(l.ev)}${l.ev >= STALE ? ' <span class="warn" title="Edges this big are almost always a stale or wrong line">⚠ sus</span>' : ''}</td><td>${vibeBadge(vibes[l.id])}</td></tr>
-    ${openLeg === l.id ? `<tr class="detail"><td colspan="10" id="bd-${esc(l.id)}"><div class="bd muted">Loading matchup…</div></td></tr>` : ''}`).join('')
-    || `<tr><td colspan="10" class="muted">No legs yet — fetch odds or load the demo.</td></tr>`;
-  tb.querySelectorAll('[data-add]').forEach(b => b.onclick = e => {
-    e.stopPropagation();
-    const id = b.dataset.add; slip = slip.includes(id) ? slip.filter(x => x !== id) : [...slip, id]; renderAll();
-  });
-  tb.querySelectorAll('[data-open]').forEach(r => r.onclick = () => { openLeg = openLeg === r.dataset.open ? null : r.dataset.open; renderLegs(); });
-  if (openLeg) {
-    const leg = legs.find(l => l.id === openLeg);
-    if (leg) Promise.all([getBreakdown(leg), vibeFor(leg)]).then(([bd, v]) => {
-      const cell = document.getElementById('bd-' + leg.id);
-      if (cell) cell.innerHTML = breakdownHTML(leg, bd, v);
-    });
-  }
-}
-
-$('scanBtn').onclick = async () => {
-  const todo = shownLegs().filter(l => SPORTS[l.sport]?.espn).slice(0, 60);
-  const btn = $('scanBtn'); btn.disabled = true;
-  let n = 0;
-  for (const l of todo) { btn.textContent = `🧠 Scanning ${++n}/${todo.length}…`; await vibeFor(l); }
-  btn.disabled = false; btn.textContent = '🧠 Scan matchups for shown legs';
-  renderAll();
-};
-
-// ================= parlay math =================
-function parlayStats(ls) {
-  const dec = ls.reduce((a, l) => a * l.dec, 1);
-  const p = ls.reduce((a, l) => a * l.fairP, 1);
-  const ev = p * dec - 1, b = dec - 1;
-  const kelly = Math.max(0, (b * p - (1 - p)) / b);
-  const f = kelly * +$('kfrac').value;
-  const growth = f > 0 ? p * Math.log(1 + f * b) + (1 - p) * Math.log(1 - f) : 0;
-  const vibe = ls.reduce((a, l) => a + (vibes[l.id]?.score || 0), 0);
-  return { dec, p, ev, kelly, f, growth, vibe, implied: 1 / dec };
-}
-
-function statsHTML(ls) {
-  const s = parlayStats(ls), bank = +$('bankroll').value || 0, stake = s.f * bank;
-  const sameGame = new Set(ls.map(l => l.eventId)).size < ls.length;
-  const reds = ls.filter(l => vibes[l.id]?.score <= -2);
-  return `
-  <div class="stats">
-    <div class="stat"><span class="muted">Odds</span><b>${toAm(s.dec)}</b></div>
-    <div class="stat"><span class="muted">True hit %</span><b>${pct(s.p)}</b></div>
-    <div class="stat"><span class="muted">EV</span><b class="${s.ev >= 0 ? 'good' : 'bad'}">${signPct(s.ev)}</b></div>
-    <div class="stat"><span class="muted">Stake</span><b>$${stake.toFixed(2)}</b></div>
-  </div>
-  <div class="bar"><span style="width:${Math.min(100, s.p * 100)}%;background:var(--good)"></span></div>
-  <div class="bar"><span style="width:${Math.min(100, s.implied * 100)}%;background:var(--muted)"></span></div>
-  <div class="legend">🟩 true hit chance ${pct(s.p)} &nbsp; ⬜ book thinks ${pct(s.implied)} — green longer = your edge</div>
-  <p class="note">$10 pays $${(10 * s.dec).toFixed(2)} · expected profit per $10: <b>${(10 * s.ev >= 0 ? '+' : '')}$${(10 * s.ev).toFixed(2)}</b>
-  ${s.ev < 0 ? '<br><span class="bad">Negative EV — Kelly says bet $0.</span>' : ''}
-  ${reds.length ? `<br><span class="bad">🔴 Matchup data fades: ${reds.map(l => esc(l.pick)).join(', ')}</span>` : ''}
-  ${sameGame ? '<br><span class="warn">⚠ Two legs from the same game: correlated, so this hit % is unreliable and many books will block it.</span>' : ''}</p>`;
-}
-
-function renderSlip() {
-  const ls = slip.map(id => legs.find(l => l.id === id)).filter(l => l && usable(l));
-  $('slip').innerHTML = ls.length ? '<ul>' + ls.map(l =>
-    `<li><b>${esc(l.pick)}</b> ${toAm(l.dec)} <span class="muted">(${esc(l.book)}, ${pct(l.fairP)})</span> <span class="${l.ev >= 0 ? 'good' : 'bad'}">${signPct(l.ev)}</span> ${vibes[l.id] ? vibeBadge(vibes[l.id]) : ''}</li>`).join('') + '</ul>'
-    : '<p class="muted">Tap ➕ on legs to add them.</p>';
-  $('slipStats').innerHTML = ls.length >= 2 ? statsHTML(ls) : ls.length ? '<p class="note">Add at least 2 legs for a parlay.</p>' : '';
-}
-
-// ================= auto builder =================
-function combos(arr, k, start = 0, cur = [], out = []) {
-  if (cur.length === k) { out.push(cur.slice()); return out; }
-  for (let i = start; i < arr.length && out.length < 20000; i++) {
-    if (cur.some(c => c.eventId === arr[i].eventId)) continue;
-    cur.push(arr[i]); combos(arr, k, i + 1, cur, out); cur.pop();
-  }
-  return out;
-}
-
-$('buildBtn').onclick = () => {
-  const k = +$('nLegs').value, min = Math.max(0.0001, +$('minEdge').value / 100), noRed = $('noRed').checked;
-  const pool = legs.filter(l => usable(l) && l.ev >= min && l.ev < STALE && (lgFilter === 'ALL' || l.lg === lgFilter) && !(noRed && vibes[l.id]?.score <= -2))
-    .sort((a, b) => b.ev - a.ev).slice(0, 16);
-  if (new Set(pool.map(l => l.eventId)).size < k) { $('autoOut').innerHTML = `<p class="muted">Not enough +EV legs from different games for ${k} legs. Lower min edge or legs.</p>`; return; }
-  const key = { growth: s => s.growth, ev: s => s.ev, hit: s => s.p, vibe: s => s.vibe + s.ev }[$('rankBy').value];
-  const ranked = combos(pool, k).map(c => ({ c, s: parlayStats(c) })).sort((a, b) => key(b.s) - key(a.s)).slice(0, 5);
-  $('autoOut').innerHTML = ranked.map((r, i) => `
-    <div class="parlay"><b>#${i + 1}</b> <span class="chip">${toAm(r.s.dec)}</span>
-      <ul>${r.c.map(l => `<li>${esc(l.pick)} <span class="muted">${toAm(l.dec)} @ ${esc(l.book)}</span> ${vibes[l.id] ? vibeBadge(vibes[l.id]) : ''}</li>`).join('')}</ul>
-      ${statsHTML(r.c)}
-      <button class="small ghost" data-load="${i}">Load into slip</button></div>`).join('');
-  document.querySelectorAll('[data-load]').forEach(b => b.onclick = () => { slip = ranked[+b.dataset.load].c.map(l => l.id); renderAll(); });
-};
-
-function renderAll() { applyBooks(); renderTabs(); renderLegs(); renderSlip(); }
-['minEdge', 'search'].forEach(id => $(id).oninput = renderLegs);
-$('showAll').onchange = renderLegs;
-$('books').onchange = () => { slip = []; renderAll(); };
-['bankroll', 'kfrac'].forEach(id => $(id).oninput = renderSlip);
-renderAll();
-</script>
+<script src="engine.js"></script>
+<script src="data/latest.js" onerror="window.EDGE_CARD = null"></script>
+<script src="app.js"></script>
 </body>
 </html>

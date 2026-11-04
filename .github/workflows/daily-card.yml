@@ -1,0 +1,63 @@
+name: Daily Edge Card
+
+on:
+  schedule:
+    - cron: '23 13 * * *'   # every morning, 8:23 AM Eastern (13:23 UTC)
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: 'Odds API credits to spend (blank = auto: credits left / days left in month)'
+        required: false
+  push:
+    branches: [main]
+    paths: ['parlay-maker/**', '.github/workflows/daily-card.yml']
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: daily-card
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Pushes only redeploy the UI with the last saved card; schedule/manual runs rebuild it.
+      - name: Build today's card
+        if: github.event_name != 'push'
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          DAILY_BUDGET: ${{ inputs.budget || vars.DAILY_BUDGET || 'auto' }}
+        run: node parlay-maker/scripts/build.js
+
+      - name: Save card to the repo
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "edge-lab-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add parlay-maker/data/latest.js
+          git diff --cached --quiet || git commit -m "Daily card $(date -u +%F)"
+          git push
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: parlay-maker
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
