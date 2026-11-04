@@ -161,8 +161,14 @@ const toAm = d => d >= 2 ? '+' + Math.round((d - 1) * 100) : String(Math.round(-
 const pct = (x, dp = 1) => (x * 100).toFixed(dp) + '%';
 const signPct = x => (x >= 0 ? '+' : '') + (x * 100).toFixed(1) + '%';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-// proportional de-vig across any number of outcomes
-const devig = decs => { const inv = decs.map(d => 1 / d); const s = inv.reduce((a, b) => a + b, 0); return inv.map(x => x / s); };
+// power de-vig: find k so that sum(implied^k) = 1. Unlike proportional de-vig it
+// doesn't overrate longshots (favorite-longshot bias), so dog edges aren't inflated.
+const devig = decs => {
+  const inv = decs.map(d => 1 / d);
+  let lo = 1, hi = 3;
+  for (let n = 0; n < 60; n++) { const k = (lo + hi) / 2; inv.reduce((a, x) => a + x ** k, 0) > 1 ? lo = k : hi = k; }
+  return inv.map(x => x ** lo);
+};
 
 let legs = [];   // {id, game, pick, dec, book, fairP, ev}
 let slip = [];   // leg ids
